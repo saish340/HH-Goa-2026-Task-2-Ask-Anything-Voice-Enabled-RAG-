@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+.venv310/
+venv/
+env/
+
+# Env / secrets
+.env
+.env.local
+*.pem
+
+# Data / model artifacts
+data/
+models/
+!backend/app/ingestion/chunkers/
+*.faiss
+*.npy
+*.onnx
+*.bin
+*.pt
+*.pkl
+*.joblib
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
