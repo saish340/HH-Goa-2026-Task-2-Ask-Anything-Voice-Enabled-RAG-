@@ -9,13 +9,14 @@ const demoQuestions = [
 ]
 
 const defaultMetrics = {
-  p50: 11.36,
-  p70: 11.41,
-  p100: 12.01,
-  recall_at_5: 80.0,
-  recall_at_10: 100.0,
-  mrr: 0.84,
-  grounded_rate: 100.0,
+  available: true,
+  p50: 67,
+  p70: 71,
+  p100: 102,
+  recall_at_5: 84,
+  recall_at_10: 88,
+  mrr: 0.576,
+  grounded_rate: 93.42,
 }
 
 const getStatusSequence = (state) => {

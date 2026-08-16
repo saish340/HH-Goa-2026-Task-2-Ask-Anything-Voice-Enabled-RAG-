@@ -41,15 +41,45 @@ def health() -> dict[str, str]:
 
 @app.get("/benchmarks")
 def benchmarks() -> Dict[str, Any]:
-    """Latest measured numbers (or empty defaults if not yet benchmarked)."""
+    """Latest measured numbers (or empty defaults if not yet benchmarked).
+
+    The frontend reads a flat readout — p50/p70/p100 (fast tier latency) and
+    recall_at_5/recall_at_10/mrr (retrieval) — so normalize the stored reports
+    into that shape while also exposing the raw payloads.
+    """
     payload: Dict[str, Any] = {"available": False}
     latency_path = BENCH_DIR / "reports" / "latency.json"
     quality_path = BENCH_DIR / "reports" / "quality.json"
+
     if latency_path.exists():
-        payload.update(json.loads(latency_path.read_text(encoding="utf-8")))
-        payload["available"] = True
+        raw = json.loads(latency_path.read_text(encoding="utf-8"))
+        fast = raw.get("fast_tier", {})
+        percs = fast.get("percentiles_ms", {})
+        payload.update(
+            {
+                "available": True,
+                "p50": percs.get("p50"),
+                "p70": percs.get("p70"),
+                "p100": percs.get("p100"),
+                "stage_p50_ms": fast.get("stage_p50_ms", {}),
+                "latency_source": raw.get("source"),
+                "latency": raw,
+            }
+        )
     if quality_path.exists():
-        payload["quality"] = json.loads(quality_path.read_text(encoding="utf-8"))
+        raw = json.loads(quality_path.read_text(encoding="utf-8"))
+        retr = raw.get("retrieval", {})
+        beh = raw.get("behavior", {})
+        if retr.get("available"):
+            payload["recall_at_5"] = retr.get("recall_at_5_pct")
+            payload["recall_at_10"] = retr.get("recall_at_10_pct")
+            payload["mrr"] = retr.get("mrr")
+        if beh:
+            payload["grounded_rate"] = beh.get("grounded_answer_rate_pct")
+            payload["refusal_rate"] = beh.get("correct_refusal_rate_pct")
+            payload["overall_accuracy"] = beh.get("overall_accuracy_pct")
+            payload["per_category"] = beh.get("per_category", {})
+        payload["quality"] = raw
     return payload
 
 
