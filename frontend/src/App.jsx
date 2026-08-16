@@ -126,12 +126,13 @@ function App() {
         setQuery(data.transcript)
         await handleAskWithQuery(data.transcript)
       } else {
-        console.error('Transcription failed:', data.error)
+        setTranscript(data.error || 'No speech detected — try speaking a bit louder.')
         setIsListening(false)
         setStatusIndex(4)
       }
     } catch (error) {
       console.error('Transcribe error:', error)
+      setTranscript(`STT error: ${error.message || error}`)
       setIsListening(false)
       setStatusIndex(4)
     }

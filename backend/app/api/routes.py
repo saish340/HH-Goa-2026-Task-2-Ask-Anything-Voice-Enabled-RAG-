@@ -113,5 +113,5 @@ async def transcribe(file: UploadFile = File(...), language: str = "en-IN") -> T
     audio_bytes = await file.read()
     if not audio_bytes:
         raise HTTPException(status_code=400, detail="Empty audio payload")
-    result = await transcribe_audio(audio_bytes, language)
+    result = await transcribe_audio(audio_bytes, language, filename=file.filename or "audio.webm")
     return TranscribeResponse(**result)
