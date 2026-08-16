@@ -84,7 +84,10 @@ class IndexStore:
     ) -> List[Tuple[int, float]]:
         hits = self.bm25.search(query, top_k=top_k * 3)
         if strategy is not None:
-            allowed = set(self.strategy_positions.get(strategy, []).tolist())
+            positions = self.strategy_positions.get(strategy)
+            if positions is None:
+                positions = np.arange(self.n, dtype=np.int64)
+            allowed = set(positions.tolist())
             hits = [(i, s) for i, s in hits if i in allowed]
         return hits[:top_k]
 

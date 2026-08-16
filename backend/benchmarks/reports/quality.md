@@ -10,9 +10,9 @@ MRR: 0.576
 
 ## Guardrails / behavior
 Test queries: 131
-Overall accuracy: 96.95%
+Overall accuracy: 98.47%
 Grounded answers: 97.37%
-Correct refusals: 96.36%
+Correct refusals: 100.0%
 Error rate: 0.0%
 
 | Category | n | Accuracy |
@@ -22,5 +22,5 @@ Error rate: 0.0%
 | noisy | 15 | 100.0% |
 | multilingual | 15 | 100.0% |
 | off_topic | 25 | 100.0% |
-| unanswerable | 15 | 86.67% |
+| unanswerable | 15 | 100.0% |
 | adversarial | 15 | 100.0% |

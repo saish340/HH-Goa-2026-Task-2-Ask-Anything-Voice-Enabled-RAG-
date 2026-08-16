@@ -22,7 +22,7 @@ This project is a local working prototype for the HH Goa 2026 Task 2 challenge. 
 
 Fresh local validation performed:
 
-- Backend tests: `5 passed in 0.48s`
+- Backend tests: `20 passed`
 - Frontend build: `vite build` completed successfully
 
 ## Performance
@@ -30,7 +30,7 @@ Fresh local validation performed:
 Retrieval and guardrail numbers below come from the reproducible quality benchmark
 (`python -m benchmarks.run_quality_bench`) run over the real offline corpus (MSMARCO-XI
 sample, hybrid dense+BM25 RRF retrieval, strategy routing, reranking). Latency figures
-are from the earlier local demo run against a small in-memory dataset.
+are from `python -m benchmarks.run_latency_bench` on the same corpus (16 vCPU, CPU-only inference).
 
 ### Retrieval (MSMARCO-XI, n=150 labeled queries)
 Recall@5: 84.00%
@@ -38,9 +38,9 @@ Recall@10: 88.00%
 MRR: 0.576
 
 ### Behavior / guardrails (131 queries across 7 categories)
-Overall accuracy: 96.95%
+Overall accuracy: 98.47%
 Grounded answers: 97.37%
-Correct refusals: 96.36%
+Correct refusals: 100.0%
 Error rate: 0.0%
 
 | Category | n | Accuracy |
@@ -50,25 +50,34 @@ Error rate: 0.0%
 | noisy | 15 | 100% |
 | multilingual | 15 | 100% |
 | off_topic | 25 | 100% |
-| unanswerable | 15 | 86.67% |
+| unanswerable | 15 | 100% |
 | adversarial | 15 | 100% |
 
-### Latency — RAG only (query → answer) — local demo dataset
-P50: 12.10 ms
-P70: 14.20 ms
-P100: 18.30 ms
+### Latency — RAG only (query → answer) — fast tier (MSMARCO-XI, n=120)
+P50: 68 ms
+P70: 71 ms
+P100: 131 ms
 
 | Stage | P50 |
 |---|---:|
-| Query processing | 1.20 ms |
-| Embedding | 2.00 ms |
-| Vector retrieval | 1.80 ms |
-| BM25 | 1.40 ms |
-| Fusion | 0.80 ms |
-| Reranking | 0.60 ms |
-| Generation | 2.10 ms |
-| Guardrail | 1.20 ms |
-| Total | 12.10 ms |
+| Query processing | 0.04 ms |
+| Embedding | 8.55 ms |
+| Dense retrieval | 20.52 ms |
+| BM25 | 5.84 ms |
+| Fusion | 0.03 ms |
+| Reranking | 10.47 ms |
+| Generation | 10.52 ms |
+| Guardrail | 10.45 ms |
+| Total | 68 ms |
+
+### Latency — LLM tier (MSMARCO-XI, n=25; local Qwen2.5 model, CPU)
+P50: 850 ms
+P70: 965 ms
+P100: 6114 ms
+
+The first query after load pays the model warm-up (≈30–40 s); the p100 outlier is the
+model load start. LLM generation dominates at ~790 ms P50. The LLM tier is used when the
+extractive (fast) tier cannot reach high confidence.
 
 ### Latency — End-to-end voice (voice → STT → RAG → answer)
 P50: Not measured in this local environment
@@ -77,7 +86,11 @@ P100: Not measured in this local environment
 
 ### Guardrails
 Grounded answers: 97.37%
-Correct refusals: 96.36%
+Correct refusals: 100.0%
+
+Refusals cover off-topic queries, adversarial/prompt-injection attempts, low-support
+extractive answers, and temporally-unanswerable questions (e.g. future-dated weather
+forecasts or exact future event timing), which a static corpus cannot know.
 
 ## Example result
 

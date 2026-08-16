@@ -161,3 +161,16 @@ def test_detect_language_scripts():
     assert detect_language("月球和地球相比有多大?") == "zh"
     assert detect_language("エッフェル塔は何でできていますか?") == "ja"
     assert detect_language("سعودی عرب کی سب سے بڑی ریگستان") == "ur"
+
+
+def test_temporal_unanswerable_guardrail():
+    from backend.app.harness.query_processor import is_temporal_unanswerable
+
+    assert is_temporal_unanswerable("What will the weather be in Mumbai in December 2030?")
+    assert is_temporal_unanswerable("When will the next ice age begin exactly?")
+    assert is_temporal_unanswerable("Will it rain tomorrow in Delhi?")
+    # Recorded, factual, or non-future questions must NOT be caught.
+    assert not is_temporal_unanswerable("What is the capital of France?")
+    assert not is_temporal_unanswerable("Who invented the paperclip in 1902?")
+    assert not is_temporal_unanswerable("What is the current temperature in Mumbai?")
+    assert not is_temporal_unanswerable("")

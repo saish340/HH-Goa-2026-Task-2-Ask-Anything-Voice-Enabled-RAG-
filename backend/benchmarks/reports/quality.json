@@ -8,9 +8,9 @@
   },
   "behavior": {
     "test_queries": 131,
-    "overall_accuracy_pct": 96.95,
+    "overall_accuracy_pct": 98.47,
     "grounded_answer_rate_pct": 97.37,
-    "correct_refusal_rate_pct": 96.36,
+    "correct_refusal_rate_pct": 100.0,
     "error_rate_pct": 0.0,
     "per_category": {
       "normal": {
@@ -35,7 +35,7 @@
       },
       "unanswerable": {
         "n": 15,
-        "accuracy_pct": 86.67
+        "accuracy_pct": 100.0
       },
       "adversarial": {
         "n": 15,

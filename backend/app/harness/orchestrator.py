@@ -28,7 +28,7 @@ from backend.app.generation.llm_client import get_client
 from backend.app.guardrails.confidence import compute_confidence
 from backend.app.guardrails.grounding import groundedness_check
 from backend.app.guardrails.off_topic import is_off_topic as is_off_topic_check
-from backend.app.harness.query_processor import detect_language, normalize_query
+from backend.app.harness.query_processor import detect_language, is_temporal_unanswerable, normalize_query
 from backend.app.retrieval.embeddings import embed_query
 from backend.app.retrieval.fusion import reciprocal_rank_fusion
 from backend.app.retrieval.strategy import route_strategy
@@ -114,6 +114,9 @@ def run_query(query: str, language: str | None = None, tier: str = "fast") -> Di
     strategy = route_strategy(normalized)
     strat_filter = None if strategy == "all" else strategy
     timings["query_processing"] = round((time.perf_counter() - t_start) * 1000, 2)
+
+    if is_temporal_unanswerable(normalized):
+        return _refusal(query, "unanswerable-temporal", timings, started)
 
     # --- embedding -------------------------------------------------------------
     t0 = time.perf_counter()
