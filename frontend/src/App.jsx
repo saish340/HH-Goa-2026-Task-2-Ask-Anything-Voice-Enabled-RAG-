@@ -54,7 +54,7 @@ function App() {
         const res = await fetch(`${API_BASE}/api/benchmarks`)
         const data = await res.json()
         setMetrics(data)
-      } catch (error) {
+      } catch {
         setMetrics(defaultMetrics)
       }
     }
@@ -160,7 +160,7 @@ function App() {
         status: data.status || 'done',
       })
       setStatusIndex(4)
-    } catch (error) {
+    } catch {
       setResponse({
         answer: 'The demo backend is offline, so this preview is using a local answer fallback.',
         grounded: true,
@@ -200,7 +200,7 @@ function App() {
         status: data.status || 'done',
       })
       setStatusIndex(4)
-    } catch (error) {
+    } catch {
       setResponse({
         answer: 'The demo backend is offline, so this preview is using a local answer fallback.',
         grounded: true,
