@@ -4,9 +4,9 @@ Dataset: MSMARCO-XI
 
 ## Retrieval
 Test queries: 150
-Recall@5: 64.67%
-Recall@10: 79.33%
-MRR: 0.359
+Recall@5: 84.0%
+Recall@10: 88.0%
+MRR: 0.576
 
 ## Guardrails / behavior
 Test queries: 131

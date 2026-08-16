@@ -147,24 +147,25 @@ def run_query(query: str, language: str | None = None, tier: str = "fast") -> Di
     # --- fusion ----------------------------------------------------------------
     t0 = time.perf_counter()
     if bm25_only:
-        fused = [(pos, score) for pos, score in bm25_hits[:FUSION_TOP_K]]
+        fused_all = [(pos, score) for pos, score in bm25_hits[:RERANK_MAX_CHUNKS]]
     elif dense_hits or bm25_hits:
-        fused = reciprocal_rank_fusion(dense_hits, bm25_hits)[:FUSION_TOP_K]
+        fused_all = reciprocal_rank_fusion(dense_hits, bm25_hits)[:RERANK_MAX_CHUNKS]
     else:
-        fused = []
+        fused_all = []
+    fused = fused_all[:FUSION_TOP_K]
     timings["fusion"] = round((time.perf_counter() - t0) * 1000, 2)
 
     # --- rerank (gated) --------------------------------------------------------
     should_rerank = (
         _latin_ratio(normalized) >= LLM_LATIN_THRESHOLD
-        and len(fused) <= RERANK_MAX_CHUNKS
-        and len(fused) > 0
+        and len(fused_all) > 0
+        and not bm25_only
     )
     reranked: List[tuple[int, float]] = []
-    if should_rerank and not bm25_only:
+    if should_rerank:
         t0 = time.perf_counter()
         try:
-            candidates = [(pos, store.chunk_text(pos)) for pos, _ in fused]
+            candidates = [(pos, store.chunk_text(pos)) for pos, _ in fused_all]
             reranked = rerank_passages(normalized, candidates, RERANK_TOP_K)
             rerank_used = True
         except Exception:
@@ -175,8 +176,9 @@ def run_query(query: str, language: str | None = None, tier: str = "fast") -> Di
         rerank_used = False
         timings["rerank"] = 0.0
 
-    final_rank = reranked if rerank_used else [(pos, float(score)) for pos, score in fused]
-    selected_positions = [pos for pos, _ in final_rank[:FUSION_TOP_K]]
+    final_rank = reranked if rerank_used else [(pos, float(score)) for pos, score in fused_all]
+    final_rank = final_rank[:FUSION_TOP_K]
+    selected_positions = [pos for pos, _ in final_rank]
 
     # Guardrail #4 — reranker relevance. When the cross-encoder ran, a top
     # score far below what on-topic passages produce means the "best" match is

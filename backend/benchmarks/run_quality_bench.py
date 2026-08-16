@@ -43,16 +43,17 @@ def retrieval_metrics(store, n: int = RETRIEVAL_N) -> dict:
     for q in labeled:
         strat = route_strategy(q["query"])
         strat_filter = None if strat == "all" else strat
-        hits = hybrid_retrieve(store, embed_query(q["query"]), q["query"], top_k=10, strategy=strat_filter)
-        selected = set(q["selected_passage_ids"])
-
-        metas = [store.chunk_meta(pos) for pos, _ in hits]
+        query_text = q["query"]
 
         def is_rel(chunk) -> bool:
             try:
                 return int(chunk.get("document_id")) in selected
             except (TypeError, ValueError):
                 return False
+
+        order = _faithful_order(store, query_text, strat_filter)
+        metas = [store.chunk_meta(pos) for pos in order]
+        selected = set(q["selected_passage_ids"])
 
         recalls5.append(1.0 if any(is_rel(m) for m in metas[:5]) else 0.0)
         recalls10.append(1.0 if any(is_rel(m) for m in metas[:10]) else 0.0)
@@ -71,6 +72,31 @@ def retrieval_metrics(store, n: int = RETRIEVAL_N) -> dict:
         "recall_at_10_pct": round(100 * statistics.mean(recalls10), 2),
         "mrr": round(statistics.mean(mrrs), 3),
     }
+
+
+def _faithful_order(store, query_text: str, strat_filter) -> list:
+    """Order of chunks the live pipeline would present (dense+BM25 RRF, then
+    cross-encoder rerank over up to RERANK_MAX_CHUNKS candidates)."""
+    from backend.app.config import (
+        BM25_TOP_K,
+        DENSE_TOP_K,
+        RERANK_MAX_CHUNKS,
+        RERANK_TOP_K,
+    )
+    from backend.app.harness.orchestrator import _latin_ratio, rerank_passages
+    from backend.app.harness.query_processor import detect_language
+    from backend.app.retrieval.fusion import reciprocal_rank_fusion
+
+    dense_hits = store.search_dense(embed_query(query_text), top_k=DENSE_TOP_K, strategy=strat_filter)
+    bm25_hits = store.search_bm25(query_text, top_k=BM25_TOP_K, strategy=strat_filter)
+    fused_all = reciprocal_rank_fusion(dense_hits, bm25_hits)[:RERANK_MAX_CHUNKS]
+
+    if detect_language(query_text) != "en" or not fused_all:
+        return [pos for pos, _ in fused_all[:10]]
+
+    candidates = [(pos, store.chunk_text(pos)) for pos, _ in fused_all]
+    reranked = rerank_passages(query_text, candidates, RERANK_TOP_K)
+    return [pos for pos, _ in reranked[:10]]
 
 
 def behavior_metrics() -> dict:

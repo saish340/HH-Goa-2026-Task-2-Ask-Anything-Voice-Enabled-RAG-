@@ -2,9 +2,9 @@
   "retrieval": {
     "available": true,
     "test_queries": 150,
-    "recall_at_5_pct": 64.67,
-    "recall_at_10_pct": 79.33,
-    "mrr": 0.359
+    "recall_at_5_pct": 84.0,
+    "recall_at_10_pct": 88.0,
+    "mrr": 0.576
   },
   "behavior": {
     "test_queries": 131,

@@ -33,9 +33,9 @@ sample, hybrid dense+BM25 RRF retrieval, strategy routing, reranking). Latency f
 are from the earlier local demo run against a small in-memory dataset.
 
 ### Retrieval (MSMARCO-XI, n=150 labeled queries)
-Recall@5: 64.67%
-Recall@10: 79.33%
-MRR: 0.359
+Recall@5: 84.00%
+Recall@10: 88.00%
+MRR: 0.576
 
 ### Behavior / guardrails (131 queries across 7 categories)
 Overall accuracy: 94.66%

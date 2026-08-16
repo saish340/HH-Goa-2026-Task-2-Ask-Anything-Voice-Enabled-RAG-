@@ -38,8 +38,8 @@ DENSE_TOP_K = int(os.environ.get("AA_DENSE_TOP_K", "20"))
 BM25_TOP_K = int(os.environ.get("AA_BM25_TOP_K", "20"))
 FUSION_TOP_K = int(os.environ.get("AA_FUSION_TOP_K", "8"))
 RRF_K = int(os.environ.get("AA_RRF_K", "60"))
-RERANK_TOP_K = int(os.environ.get("AA_RERANK_TOP_K", "8"))
-RERANK_MAX_CHUNKS = int(os.environ.get("AA_RERANK_MAX_CHUNKS", "12"))
+RERANK_TOP_K = int(os.environ.get("AA_RERANK_TOP_K", "10"))
+RERANK_MAX_CHUNKS = int(os.environ.get("AA_RERANK_MAX_CHUNKS", "20"))
 
 # --- Guardrails ---------------------------------------------------------------
 # Minimal cosine similarity between query and best retrieved chunk before we

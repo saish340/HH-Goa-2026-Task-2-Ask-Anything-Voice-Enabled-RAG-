@@ -3,31 +3,31 @@
 ## fast_tier tier
 
 Test queries: 120
-P50: 70.0 ms / P70: 73.0 ms / P100: 101.0 ms
+P50: 67.0 ms / P70: 71.0 ms / P100: 102.0 ms
 
 | Stage | P50 (ms) |
 |---|---|
 | query_processing | 0.04 |
-| embedding | 8.97 |
-| dense | 21.135 |
-| bm25 | 6.065 |
+| embedding | 8.76 |
+| dense | 20.575 |
+| bm25 | 5.54 |
 | fusion | 0.03 |
-| rerank | 8.21 |
-| generation | 10.86 |
-| guardrail | 10.5 |
+| rerank | 9.87 |
+| generation | 10.61 |
+| guardrail | 10.64 |
 
 ## llm_tier tier
 
 Test queries: 25
-P50: 795.0 ms / P70: 981.4 ms / P100: 5507.0 ms
+P50: 859.0 ms / P70: 990.8 ms / P100: 4430.0 ms
 
 | Stage | P50 (ms) |
 |---|---|
 | query_processing | 0.04 |
-| embedding | 8.62 |
-| dense | 20.44 |
-| bm25 | 6.36 |
+| embedding | 9.1 |
+| dense | 20.48 |
+| bm25 | 6.33 |
 | fusion | 0.03 |
-| rerank | 8.11 |
-| generation | 743.86 |
-| guardrail | 10.54 |
+| rerank | 9.51 |
+| generation | 800.52 |
+| guardrail | 10.52 |
