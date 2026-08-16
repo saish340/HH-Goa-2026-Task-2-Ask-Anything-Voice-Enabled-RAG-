@@ -23,10 +23,19 @@ def detect_language(query: str) -> str:
     devanagari = bool(re.search(r"[\u0900-\u097F]", query))
     arabic = bool(re.search(r"[\u0600-\u06FF]", query))
     bengali = bool(re.search(r"[\u0980-\u09FF]", query))
+    # CJK: Han + Kana share an encoding block; treat Hiragana/Katakana as
+    # Japanese and pure Han characters as Chinese.
+    hiragana = bool(re.search(r"[\u3040-\u309F]", query))
+    katakana = bool(re.search(r"[\u30A0-\u30FF]", query))
+    han = bool(re.search(r"[\u4E00-\u9FFF]", query))
     if devanagari:
         return "hi"
     if arabic:
         return "ur"
     if bengali:
         return "bn"
+    if hiragana or katakana:
+        return "ja"
+    if han:
+        return "zh"
     return "en"

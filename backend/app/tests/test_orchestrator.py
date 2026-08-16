@@ -158,3 +158,6 @@ def test_normalize_query_cleans_filler():
 def test_detect_language_scripts():
     assert detect_language("भारत की राजधानी") == "hi"
     assert detect_language("What is the capital?") == "en"
+    assert detect_language("月球和地球相比有多大?") == "zh"
+    assert detect_language("エッフェル塔は何でできていますか?") == "ja"
+    assert detect_language("سعودی عرب کی سب سے بڑی ریگستان") == "ur"
