@@ -57,6 +57,16 @@ EXTRACT_MIN_SIM = float(os.environ.get("AA_EXTRACT_MIN_SIM", "0.50"))
 EXTRACT_MIN_COVERAGE = float(os.environ.get("AA_EXTRACT_MIN_COVERAGE", "0.25"))
 # Answers shorter than this word count are treated as garbage / refused.
 EXTRACT_MIN_WORDS = int(os.environ.get("AA_EXTRACT_MIN_WORDS", "3"))
+# When the reranker runs, a top passage scoring below this cross-encoder value
+# is treated as a failed/unsupported retrieval and refused. On-topic queries
+# typically score >6; irrelevant-but-lexically-near passages score <2.
+RERANK_REFUSE_BELOW = float(os.environ.get("AA_RERANK_REFUSE_BELOW", "1.5"))
+# Below this value the reranker score alone signals junk (absolutely refuse,
+# regardless of the extractive score).
+RERANK_REFUSE_HARD = float(os.environ.get("AA_RERANK_REFUSE_HARD", "0.5"))
+# Extractive relevance above this exempts a passage from the reranker gate
+# (the retrieval snippet genuinely responds to the query).
+EXTRACT_STRONG = float(os.environ.get("AA_EXTRACT_STRONG", "0.6"))
 
 # --- Strategy routing ---------------------------------------------------------
 SHORT_QUERY_WORD_MAX = int(os.environ.get("AA_SHORT_QUERY_WORD_MAX", "12"))

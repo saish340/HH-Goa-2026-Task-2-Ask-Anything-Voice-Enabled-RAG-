@@ -38,20 +38,20 @@ Recall@10: 79.33%
 MRR: 0.359
 
 ### Behavior / guardrails (131 queries across 7 categories)
-Overall accuracy: 84.73%
-Grounded answers: 93.42%
-Correct refusals: 72.73%
+Overall accuracy: 93.13%
+Grounded answers: 90.79%
+Correct refusals: 96.36%
 Error rate: 0.0%
 
 | Category | n | Accuracy |
 |---|---|---:|
-| normal | 26 | 96.15% |
-| paraphrased | 20 | 100% |
+| normal | 26 | 92.31% |
+| paraphrased | 20 | 95% |
 | noisy | 15 | 100% |
 | multilingual | 15 | 73.33% |
-| off_topic | 25 | 76% |
-| unanswerable | 15 | 53.33% |
-| adversarial | 15 | 86.67% |
+| off_topic | 25 | 100% |
+| unanswerable | 15 | 86.67% |
+| adversarial | 15 | 100% |
 
 ### Latency — RAG only (query → answer) — local demo dataset
 P50: 12.10 ms
@@ -76,8 +76,8 @@ P70: Not measured in this local environment
 P100: Not measured in this local environment
 
 ### Guardrails
-Grounded answers: 93.42%
-Correct refusals: 72.73%
+Grounded answers: 90.79%
+Correct refusals: 96.36%
 
 ## Example result
 

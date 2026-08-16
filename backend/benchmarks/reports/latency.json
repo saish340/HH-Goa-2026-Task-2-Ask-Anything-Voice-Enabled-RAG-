@@ -3,22 +3,22 @@
     "tier": "fast",
     "test_queries": 120,
     "percentiles_ms": {
-      "p50": 73.0,
-      "p70": 77.0,
-      "p100": 136.0
+      "p50": 70.0,
+      "p70": 73.0,
+      "p100": 101.0
     },
-    "mean_ms": 75.31,
+    "mean_ms": 69.66,
     "stage_p50_ms": {
       "query_processing": 0.04,
-      "embedding": 9.54,
-      "dense": 21.165,
-      "bm25": 6.415,
+      "embedding": 8.97,
+      "dense": 21.135,
+      "bm25": 6.065,
       "fusion": 0.03,
-      "rerank": 8.935,
-      "generation": 11.69,
-      "guardrail": 11.135
+      "rerank": 8.21,
+      "generation": 10.86,
+      "guardrail": 10.5
     },
-    "refused": 7,
+    "refused": 18,
     "errors": 0,
     "note": "STT and out-of-process network latency are reported separately (see README)."
   },
@@ -26,22 +26,22 @@
     "tier": "llm",
     "test_queries": 25,
     "percentiles_ms": {
-      "p50": 890.0,
-      "p70": 1048.6,
-      "p100": 6092.0
+      "p50": 795.0,
+      "p70": 981.4,
+      "p100": 5507.0
     },
-    "mean_ms": 1026.48,
+    "mean_ms": 880.88,
     "stage_p50_ms": {
-      "query_processing": 0.05,
-      "embedding": 8.92,
-      "dense": 20.8,
-      "bm25": 6.61,
+      "query_processing": 0.04,
+      "embedding": 8.62,
+      "dense": 20.44,
+      "bm25": 6.36,
       "fusion": 0.03,
-      "rerank": 8.35,
-      "generation": 837.26,
-      "guardrail": 10.96
+      "rerank": 8.11,
+      "generation": 743.86,
+      "guardrail": 10.54
     },
-    "refused": 3,
+    "refused": 6,
     "errors": 0,
     "note": "STT and out-of-process network latency are reported separately (see README)."
   },

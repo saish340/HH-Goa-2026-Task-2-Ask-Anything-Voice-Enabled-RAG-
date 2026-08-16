@@ -8,18 +8,18 @@
   },
   "behavior": {
     "test_queries": 131,
-    "overall_accuracy_pct": 84.73,
-    "grounded_answer_rate_pct": 93.42,
-    "correct_refusal_rate_pct": 72.73,
+    "overall_accuracy_pct": 93.13,
+    "grounded_answer_rate_pct": 90.79,
+    "correct_refusal_rate_pct": 96.36,
     "error_rate_pct": 0.0,
     "per_category": {
       "normal": {
         "n": 26,
-        "accuracy_pct": 96.15
+        "accuracy_pct": 92.31
       },
       "paraphrased": {
         "n": 20,
-        "accuracy_pct": 100.0
+        "accuracy_pct": 95.0
       },
       "noisy": {
         "n": 15,
@@ -31,15 +31,15 @@
       },
       "off_topic": {
         "n": 25,
-        "accuracy_pct": 76.0
+        "accuracy_pct": 100.0
       },
       "unanswerable": {
         "n": 15,
-        "accuracy_pct": 53.33
+        "accuracy_pct": 86.67
       },
       "adversarial": {
         "n": 15,
-        "accuracy_pct": 86.67
+        "accuracy_pct": 100.0
       }
     }
   },

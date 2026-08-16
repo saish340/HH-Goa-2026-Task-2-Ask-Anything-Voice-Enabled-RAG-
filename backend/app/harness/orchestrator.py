@@ -17,8 +17,11 @@ from backend.app.config import (
     EXTRACT_MIN_COVERAGE,
     EXTRACT_MIN_SIM,
     EXTRACT_MIN_WORDS,
+    EXTRACT_STRONG,
     FUSION_TOP_K,
     RERANK_MAX_CHUNKS,
+    RERANK_REFUSE_BELOW,
+    RERANK_REFUSE_HARD,
     RERANK_TOP_K,
 )
 from backend.app.generation.llm_client import get_client
@@ -175,6 +178,14 @@ def run_query(query: str, language: str | None = None, tier: str = "fast") -> Di
     final_rank = reranked if rerank_used else [(pos, float(score)) for pos, score in fused]
     selected_positions = [pos for pos, _ in final_rank[:FUSION_TOP_K]]
 
+    # Guardrail #4 — reranker relevance. When the cross-encoder ran, a top
+    # score far below what on-topic passages produce means the "best" match is
+    # really an irrelevant-but-similar passage. Combined with the extractive
+    # relevance score so terse-but-correct fragments (e.g. "City of Paris.")
+    # are not falsely refused.
+    rerank_top = float(final_rank[0][1]) if rerank_used and final_rank else None
+    rerank_used_early = rerank_top is not None
+
     # --- retrieval verdicts ------------------------------------------------------
     retrieved_chunks: List[dict] = []
     for pos, score in final_rank[:FUSION_TOP_K]:
@@ -230,7 +241,19 @@ def run_query(query: str, language: str | None = None, tier: str = "fast") -> Di
     # Guardrail #2 — confidence
     confidence = compute_confidence(dense_cosines, bm25_top, supported)
 
-    if (not supported) or extract_irrelevant:
+    # Guardrail #4 — reranker relevance combined with extractive relevance.
+    # A top cross-encoder score far below what on-topic passages produce means
+    # the "best" match is an irrelevant-but-similar passage. We refuse on the
+    # reranker alone when it is abysmal; otherwise only when the extractive
+    # tier also fails to find a semantically strong snippet, so terse-but-
+    # correct fragments (e.g. "City of Paris.") are still answered.
+    extract_score = float(gen.get("score", 1.0))
+    rerank_refuse = rerank_used_early and (
+        rerank_top < RERANK_REFUSE_HARD
+        or (rerank_top < RERANK_REFUSE_BELOW and extract_score < EXTRACT_STRONG)
+    )
+
+    if (not supported) or extract_irrelevant or rerank_refuse:
         reason = "low-confidence" if confidence < CONFIDENCE_MIN else "ungrounded"
         refusal = _refusal(query, reason, timings, started)
         refusal["answer"] = answer if answer else REFUSAL_MESSAGE
