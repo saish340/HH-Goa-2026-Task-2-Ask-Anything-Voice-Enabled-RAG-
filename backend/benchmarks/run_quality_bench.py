@@ -15,22 +15,11 @@ from backend.app.config import BENCH_DIR, TEST_QUERIES_PATH
 from backend.app.harness.orchestrator import run_query, warmup
 from backend.app.ingestion.ingest import load_eval_queries
 from backend.app.retrieval.embeddings import embed_query
-from backend.app.retrieval.hybrid import hybrid_retrieve
 from backend.app.retrieval.strategy import route_strategy
 from backend.app.retrieval.store import load
 
 REPORT_DIR = BENCH_DIR / "reports"
 RETRIEVAL_N = 150
-
-
-def _relevant(chunk, passage_by_id):
-    doc_id = chunk.get("document_id")
-    if doc_id is None:
-        return False
-    try:
-        return int(doc_id) in passage_by_id
-    except (TypeError, ValueError):
-        return False
 
 
 def retrieval_metrics(store, n: int = RETRIEVAL_N) -> dict:
@@ -83,7 +72,7 @@ def _faithful_order(store, query_text: str, strat_filter) -> list:
         RERANK_MAX_CHUNKS,
         RERANK_TOP_K,
     )
-    from backend.app.harness.orchestrator import _latin_ratio, rerank_passages
+    from backend.app.harness.orchestrator import rerank_passages
     from backend.app.harness.query_processor import detect_language
     from backend.app.retrieval.fusion import reciprocal_rank_fusion
 
