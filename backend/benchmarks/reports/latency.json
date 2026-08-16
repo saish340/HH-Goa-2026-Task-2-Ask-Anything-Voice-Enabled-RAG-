@@ -1,0 +1,49 @@
+{
+  "fast_tier": {
+    "tier": "fast",
+    "test_queries": 120,
+    "percentiles_ms": {
+      "p50": 73.0,
+      "p70": 77.0,
+      "p100": 136.0
+    },
+    "mean_ms": 75.31,
+    "stage_p50_ms": {
+      "query_processing": 0.04,
+      "embedding": 9.54,
+      "dense": 21.165,
+      "bm25": 6.415,
+      "fusion": 0.03,
+      "rerank": 8.935,
+      "generation": 11.69,
+      "guardrail": 11.135
+    },
+    "refused": 7,
+    "errors": 0,
+    "note": "STT and out-of-process network latency are reported separately (see README)."
+  },
+  "llm_tier": {
+    "tier": "llm",
+    "test_queries": 25,
+    "percentiles_ms": {
+      "p50": 890.0,
+      "p70": 1048.6,
+      "p100": 6092.0
+    },
+    "mean_ms": 1026.48,
+    "stage_p50_ms": {
+      "query_processing": 0.05,
+      "embedding": 8.92,
+      "dense": 20.8,
+      "bm25": 6.61,
+      "fusion": 0.03,
+      "rerank": 8.35,
+      "generation": 837.26,
+      "guardrail": 10.96
+    },
+    "refused": 3,
+    "errors": 0,
+    "note": "STT and out-of-process network latency are reported separately (see README)."
+  },
+  "source": "MSMARCO-XI"
+}

@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field
 
 
 class QueryRequest(BaseModel):
-    query: str = Field(..., min_length=1)
-    language: str = "en"
+    query: str = Field(..., min_length=1, max_length=1024)
+    language: str | None = None
 
 
 class RetrievedChunk(BaseModel):
@@ -23,15 +23,23 @@ class RetrievedChunk(BaseModel):
 
 class QueryResponse(BaseModel):
     query: str
-    retrieved_chunks: List[RetrievedChunk]
-    scores: List[float]
-    answer: str
-    grounded: bool
-    confidence: float
-    latency_ms: int
-    status: str = "ok"
+    normalized_query: str = ""
+    language: str = "en"
+    retrieved_chunks: List[RetrievedChunk] = []
+    scores: List[float] = []
+    answer: str = ""
+    grounded: bool = False
+    grounding_label: str = "UNSUPPORTED"
+    grounding_score: float = 0.0
+    confidence: float = 0.0
+    latency_ms: int = 0
+    per_stage_ms: Dict[str, float] = {}
+    strategy_used: str = "all"
+    degraded: bool = False
+    status: str = "ok"  # ok | refused | error
     error: Optional[str] = None
     sources: List[str] = []
+    version: str = "2.0"
 
 
 class QueryResultDict(Dict[str, Any]):

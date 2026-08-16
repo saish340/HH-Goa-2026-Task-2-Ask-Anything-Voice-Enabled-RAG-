@@ -1,30 +1,43 @@
+"""Hybrid retrieval: dense + BM25 fused with Reciprocal Rank Fusion.
+
+Built on the offline ``IndexStore`` so it never blocks on network I/O.
+"""
+
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import List, Optional
 
 from backend.app.retrieval.bm25 import BM25Index
 from backend.app.retrieval.dense import DenseIndex
-from backend.app.retrieval.fusion import reciprocal_rank_fusion
+from backend.app.retrieval.embeddings import embed_query
+from backend.app.retrieval.store import IndexStore, hybrid_retrieve
 
 
 class HybridRetriever:
-    def __init__(self, corpus: List[str]):
-        self.corpus = corpus
-        self.dense = DenseIndex(corpus)
-        self.bm25 = BM25Index(corpus)
+    def __init__(self, store: Optional[IndexStore] = None, corpus: Optional[List[str]] = None):
+        if store is None and corpus:
+            store = IndexStore.from_corpus(corpus) if hasattr(IndexStore, "from_corpus") else None
+        self.store = store
+        self.dense = DenseIndex(store)
+        self.bm25 = BM25Index(corpus or [])
 
-    def retrieve(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
-        dense_hits = self.dense.search(query, top_k=top_k)
-        bm25_hits = self.bm25.search(query, top_k=top_k)
-        fused = reciprocal_rank_fusion(dense_hits, bm25_hits)
-
-        results = []
-        for idx, score in fused[:top_k]:
-            text = self.corpus[idx]
-            results.append({
-                "document_id": str(idx),
-                "chunk_strategy": "hybrid",
-                "text": text,
+    def retrieve(
+        self,
+        query: str,
+        top_k: int = 8,
+        strategy: Optional[str] = None,
+    ) -> List[dict]:
+        if self.store is None:
+            return []
+        hits = hybrid_retrieve(self.store, embed_query(query), query, top_k=top_k, strategy=strategy)
+        return [
+            {
+                "position": pos,
+                "chunk_id": self.store.chunks[pos]["chunk_id"],
+                "document_id": self.store.chunks[pos]["document_id"],
+                "chunk_strategy": self.store.chunks[pos]["chunk_strategy"],
+                "text": self.store.chunk_text(pos),
                 "score": float(score),
-            })
-        return results
+            }
+            for pos, score in hits
+        ]

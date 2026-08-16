@@ -1,0 +1,47 @@
+{
+  "retrieval": {
+    "available": true,
+    "test_queries": 150,
+    "recall_at_5_pct": 64.67,
+    "recall_at_10_pct": 79.33,
+    "mrr": 0.359
+  },
+  "behavior": {
+    "test_queries": 131,
+    "overall_accuracy_pct": 84.73,
+    "grounded_answer_rate_pct": 93.42,
+    "correct_refusal_rate_pct": 72.73,
+    "error_rate_pct": 0.0,
+    "per_category": {
+      "normal": {
+        "n": 26,
+        "accuracy_pct": 96.15
+      },
+      "paraphrased": {
+        "n": 20,
+        "accuracy_pct": 100.0
+      },
+      "noisy": {
+        "n": 15,
+        "accuracy_pct": 100.0
+      },
+      "multilingual": {
+        "n": 15,
+        "accuracy_pct": 73.33
+      },
+      "off_topic": {
+        "n": 25,
+        "accuracy_pct": 76.0
+      },
+      "unanswerable": {
+        "n": 15,
+        "accuracy_pct": 53.33
+      },
+      "adversarial": {
+        "n": 15,
+        "accuracy_pct": 86.67
+      }
+    }
+  },
+  "dataset": "MSMARCO-XI"
+}

@@ -1,50 +1,77 @@
+"""BM25 lexical retrieval with inverted postings (fast on large corpora).
+
+Implements BM25 (b = 0.75, k1 = 1.5) with a proper inverted index so scoring
+only touches documents that share a query token, keeping the lexical stage
+cheap enough to fit the latency budget.
+"""
+
 from __future__ import annotations
 
 import math
 import re
-from typing import List, Sequence, Tuple
+from collections import defaultdict
+from typing import Dict, List, Sequence, Tuple
 
 
 def tokenize(text: str) -> List[str]:
-    return re.findall(r"\b[a-z0-9]+\b", text.lower())
+    return re.findall(r"[a-z0-9']+", text.lower())
+
+
+STOPWORDS = {
+    "the", "and", "of", "to", "a", "in", "on", "for", "is", "are", "was",
+    "were", "be", "been", "it", "its", "this", "that", "with", "as", "by",
+    "at", "or", "do", "does", "did", "an", "not", "but", "from", "what",
+    "which", "how", "why", "who", "when", "where", "i", "you", "your", "me",
+}
+
+
+def query_tokens(query: str) -> List[str]:
+    """Query tokens with high-frequency stopwords dropped (they dominate postings)."""
+    return [tok for tok in tokenize(query) if tok not in STOPWORDS]
 
 
 class BM25Index:
     def __init__(self, corpus: Sequence[str]):
-        self.corpus = [text for text in corpus if text]
-        self.doc_freq = {}
-        self.doc_len = []
+        self.corpus = list(corpus)
+        self.n_docs = max(1, len(self.corpus))
+        self.doc_len: List[int] = []
         self.avgdl = 0.0
-        self.idf = []
-        self.tokenized_docs = [tokenize(text) for text in self.corpus]
+        self.postings: Dict[str, List[Tuple[int, int]]] = defaultdict(list)
+        self.idf: Dict[str, float] = {}
+        self._build()
 
-        doc_count = len(self.tokenized_docs)
-        for tokens in self.tokenized_docs:
-            self.doc_len.append(len(tokens))
-            uniq = set(tokens)
-            for token in uniq:
-                self.doc_freq[token] = self.doc_freq.get(token, 0) + 1
-        self.avgdl = sum(self.doc_len) / max(1, doc_count)
+    def _build(self) -> None:
+        doc_freq: Dict[str, int] = defaultdict(int)
+        total_len = 0
+        for doc_idx, text in enumerate(self.corpus):
+            token_counts: Dict[str, int] = defaultdict(int)
+            for tok in tokenize(text):
+                token_counts[tok] += 1
+            total_len += sum(token_counts.values())
+            self.doc_len.append(sum(token_counts.values()))
+            for tok, tf in token_counts.items():
+                if not self.postings[tok] or self.postings[tok][-1][0] != doc_idx:
+                    doc_freq[tok] += 1
+                self.postings[tok].append((doc_idx, tf))
 
-        for token, df in self.doc_freq.items():
-            self.idf.append((token, math.log((doc_count - df + 0.5) / (df + 0.5) + 1.0)))
-        self.idf_dict = dict(self.idf)
+        self.avgdl = total_len / self.n_docs if self.n_docs else 0.0
+        for tok, df in doc_freq.items():
+            self.idf[tok] = math.log((self.n_docs - df + 0.5) / (df + 0.5) + 1.0)
 
-    def search(self, query: str, top_k: int = 5) -> List[Tuple[int, float]]:
-        q_tokens = tokenize(query)
-        if not q_tokens or not self.corpus:
+    def search(self, query: str, top_k: int = 20) -> List[Tuple[int, float]]:
+        q_tokens = query_tokens(query)
+        if not q_tokens:
             return []
-        scores: List[Tuple[int, float]] = []
-        for idx, doc_tokens in enumerate(self.tokenized_docs):
-            score = 0.0
-            doc_len = self.doc_len[idx]
-            for token in set(q_tokens):
-                if token not in self.idf_dict:
-                    continue
-                term_freq = doc_tokens.count(token)
-                numerator = self.idf_dict[token] * term_freq * (1.5 + 1.0)
-                denominator = term_freq + 1.5 * (1.0 - 0.75 + 0.75 * (doc_len / self.avgdl if self.avgdl else 1.0))
-                if denominator > 0:
-                    score += numerator / denominator
-            scores.append((idx, score))
-        return sorted(scores, key=lambda x: x[1], reverse=True)[:top_k]
+        k1, b = 1.5, 0.75
+        scores: Dict[int, float] = defaultdict(float)
+        for tok in set(q_tokens):
+            idf = self.idf.get(tok)
+            if idf is None:
+                continue
+            for doc_idx, tf in self.postings.get(tok, []):
+                doc_len = self.doc_len[doc_idx]
+                denom = tf + k1 * (1.0 - b + b * (doc_len / self.avgdl if self.avgdl else 1.0))
+                scores[doc_idx] += idf * (tf * (k1 + 1.0)) / max(denom, 1e-9)
+
+        ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)[:top_k]
+        return [(doc_idx, float(score)) for doc_idx, score in ranked]

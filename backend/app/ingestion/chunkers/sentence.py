@@ -1,35 +1,70 @@
 from __future__ import annotations
 
+import math
 import re
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List, Optional
+
+SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
+QUOTED_ABBREV = re.compile(r"\b([A-Za-z]\.)+$")
 
 
-def sentence_chunker(text: str, document_id: str = "doc-1", language: str = "en") -> List[Dict[str, Any]]:
-    """Split text into sentence-level chunks with metadata."""
+def split_sentences(text: str) -> List[str]:
+    """Split text into sentences, guarding simple abbreviations."""
+    if not text:
+        return []
+    parts = SENTENCE_SPLIT_RE.split(text.strip())
+    cleaned: List[str] = []
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        # Merge fragments that end with a detached abbreviation like "U.S." or "e.g."
+        if cleaned and not cleaned[-1].endswith((".", "!", "?")):
+            cleaned[-1] = f"{cleaned[-1]} {part}"
+        else:
+            cleaned.append(part)
+    return cleaned
+
+
+def _token_count(text: str) -> int:
+    return max(1, len(text.split()))
+
+
+def sentence_chunker(
+    text: str,
+    document_id: str = "doc-1",
+    language: str = "en",
+    max_chars: Optional[int] = None,
+) -> List[Dict[str, Any]]:
+    """Sentence-level chunking — one chunk per sentence with metadata."""
     if not text or not text.strip():
         return []
-    
-    parts = re.split(r"(?<=[.!?])\s+", text.strip())
     chunks: List[Dict[str, Any]] = []
-    
-    for idx, part in enumerate(parts, start=1):
-        cleaned = part.strip()
-        if not cleaned:
+    for idx, sentence in enumerate(split_sentences(text), start=1):
+        if max_chars and len(sentence) > max_chars:
+            # Split oversized sentences into word windows.
+            words = sentence.split()
+            for wpos, start in enumerate(range(0, len(words), 40), start=1):
+                piece = " ".join(words[start : start + 40])
+                chunks.append({
+                    "chunk_id": f"{document_id}-sentence-{idx}-{wpos}",
+                    "document_id": document_id,
+                    "chunk_strategy": "sentence",
+                    "position": idx,
+                    "token_count": _token_count(piece),
+                    "language": language,
+                    "text": piece,
+                    "metadata": {"sentence_index": idx},
+                })
             continue
-        
-        # Token count: ~1 word ≈ 1.3 tokens
-        word_count = len(cleaned.split())
-        token_count = max(1, int(word_count * 1.3))
-        
         chunks.append({
             "chunk_id": f"{document_id}-sentence-{idx}",
             "document_id": document_id,
             "chunk_strategy": "sentence",
             "position": idx,
-            "token_count": token_count,
+            "token_count": _token_count(sentence),
             "language": language,
-            "text": cleaned,
-            "metadata": {"sentence_index": idx, "char_count": len(cleaned)},
+            "text": sentence,
+            "metadata": {"sentence_index": idx, "char_count": len(sentence)},
         })
     return chunks
-

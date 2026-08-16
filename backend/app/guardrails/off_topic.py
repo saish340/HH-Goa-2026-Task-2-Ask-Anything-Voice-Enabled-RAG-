@@ -1,21 +1,23 @@
+"""Guardrail #1 — off-topic detection.
+
+A query is considered off-topic when the best retrieved passage has weak
+dense similarity to the query (below ``OFF_TOPIC_COSINE_THRESHOLD``) or when
+retrieval returns nothing at all. The score used here is the raw FAISS cosine
+similarity between the query embedding and the top chunk embedding.
+"""
+
 from __future__ import annotations
 
-import re
-from typing import Sequence
-
-STOPWORDS = {"a", "an", "the", "to", "in", "on", "of", "for", "how", "what", "when", "where", "why", "who", "which", "is", "are", "do", "does", "did", "it", "its", "be", "was", "were"}
+from backend.app.config import OFF_TOPIC_COSINE_THRESHOLD
 
 
-def _tokens(text: str) -> set[str]:
-    cleaned = re.sub(r"[^a-z0-9\s]", " ", text.lower())
-    return {token for token in cleaned.split() if token and token not in STOPWORDS}
+def best_similarity(dense_hits: list[tuple[int, float]]) -> float:
+    if not dense_hits:
+        return 0.0
+    return max(score for _, score in dense_hits)
 
 
-def is_off_topic(query: str, retrieved_chunks: Sequence[str]) -> bool:
-    if not retrieved_chunks:
+def is_off_topic(dense_hits: list[tuple[int, float]], retrieved_count: int) -> bool:
+    if retrieved_count == 0 or not dense_hits:
         return True
-
-    query_tokens = _tokens(query)
-    chunk_tokens = _tokens(" ".join(retrieved_chunks))
-    overlap = query_tokens & chunk_tokens
-    return len(overlap) == 0
+    return best_similarity(dense_hits) < OFF_TOPIC_COSINE_THRESHOLD

@@ -1,40 +1,181 @@
+"""Quality benchmark: retrieval quality + guardrail behavior.
+
+Part A — retrieval quality (Recall@5/@10, MRR) over labeled MSMARCO-XI queries.
+Part B — behavior (grounded rate, correct refusal rate, error rate) across the
+categorized test set (normal/paraphrase/noisy/multilingual/off-topic/
+unanswerable/adversarial).
+"""
 from __future__ import annotations
 
-from statistics import mean
+import json
+import statistics
+from pathlib import Path
 
-from backend.app.harness.orchestrator import run_query
+from backend.app.config import BENCH_DIR, TEST_QUERIES_PATH
+from backend.app.harness.orchestrator import run_query, warmup
+from backend.app.ingestion.ingest import load_eval_queries
+from backend.app.retrieval.embeddings import embed_query
+from backend.app.retrieval.hybrid import hybrid_retrieve
+from backend.app.retrieval.strategy import route_strategy
+from backend.app.retrieval.store import load
 
-TEST_QUERIES = [
-    ("What is the capital of France?", True),
-    ("Which city is the capital of India?", True),
-    ("What temperature does water boil at?", True),
-    ("How to bake a cake in the moon?", False),
-    ("Who is the president of the United States?", False),
-]
+REPORT_DIR = BENCH_DIR / "reports"
+RETRIEVAL_N = 150
 
 
-def benchmark() -> dict:
-    results = []
-    for query, expected_supported in TEST_QUERIES:
-        response = run_query(query)
-        correct = bool(response["grounded"]) == expected_supported
-        results.append({
-            "query": query,
-            "expected": expected_supported,
-            "grounded": response["grounded"],
-            "correct": correct,
-            "latency_ms": response["latency_ms"],
-        })
+def _relevant(chunk, passage_by_id):
+    doc_id = chunk.get("document_id")
+    if doc_id is None:
+        return False
+    try:
+        return int(doc_id) in passage_by_id
+    except (TypeError, ValueError):
+        return False
 
-    accuracy = mean(1.0 if item["correct"] else 0.0 for item in results)
-    grounded_rate = mean(1.0 if item["grounded"] else 0.0 for item in results if item["expected"])
+
+def retrieval_metrics(store, n: int = RETRIEVAL_N) -> dict:
+    labeled = [q for q in load_eval_queries() if q["selected_passage_ids"]]
+    labeled = labeled[:n]
+    if not labeled:
+        return {"available": False}
+
+    recalls5, recalls10, mrrs = [], [], []
+    for q in labeled:
+        strat = route_strategy(q["query"])
+        strat_filter = None if strat == "all" else strat
+        hits = hybrid_retrieve(store, embed_query(q["query"]), q["query"], top_k=10, strategy=strat_filter)
+        selected = set(q["selected_passage_ids"])
+
+        metas = [store.chunk_meta(pos) for pos, _ in hits]
+
+        def is_rel(chunk) -> bool:
+            try:
+                return int(chunk.get("document_id")) in selected
+            except (TypeError, ValueError):
+                return False
+
+        recalls5.append(1.0 if any(is_rel(m) for m in metas[:5]) else 0.0)
+        recalls10.append(1.0 if any(is_rel(m) for m in metas[:10]) else 0.0)
+
+        mrr = 0.0
+        for rank, meta in enumerate(metas, start=1):
+            if is_rel(meta):
+                mrr = 1.0 / rank
+                break
+        mrrs.append(mrr)
+
     return {
-        "queries": len(results),
-        "accuracy": round(accuracy * 100, 2),
-        "grounded_rate": round(grounded_rate * 100, 2) if results else 0,
-        "latencies": [item["latency_ms"] for item in results],
+        "available": True,
+        "test_queries": len(labeled),
+        "recall_at_5_pct": round(100 * statistics.mean(recalls5), 2),
+        "recall_at_10_pct": round(100 * statistics.mean(recalls10), 2),
+        "mrr": round(statistics.mean(mrrs), 3),
     }
 
 
+def behavior_metrics() -> dict:
+    data = json.loads(Path(TEST_QUERIES_PATH).read_text(encoding="utf-8"))
+    categories = [k for k in data if k != "_meta"]
+
+    per_category: dict[str, dict] = {}
+    correct_total, answer_total, refuse_total = 0, 0, 0
+    answer_hits, refuse_hits = 0, 0
+    errors = 0
+    total = 0
+
+    for cat in categories:
+        entries = data[cat]
+        ok = 0
+        for entry in entries:
+            total += 1
+            try:
+                res = run_query(entry["query"], tier="fast")
+            except Exception:
+                errors += 1
+                continue
+            status = res.get("status")
+            expects = entry["expects_answer"]
+            if expects:
+                answer_total += 1
+                correct = status == "ok" and res.get("grounded") is True
+                if status == "ok" and res.get("grounded"):
+                    answer_hits += 1
+            else:
+                refuse_total += 1
+                correct = status == "refused"
+                if status == "refused":
+                    refuse_hits += 1
+            ok += 1 if correct else 0
+        per_category[cat] = {
+            "n": len(entries),
+            "accuracy_pct": round(100 * ok / max(1, len(entries)), 2),
+        }
+        correct_total += ok
+
+    grounded_rate = 100 * answer_hits / max(1, answer_total)
+    refusal_rate = 100 * refuse_hits / max(1, refuse_total)
+    return {
+        "test_queries": total,
+        "overall_accuracy_pct": round(100 * correct_total / max(1, total), 2),
+        "grounded_answer_rate_pct": round(grounded_rate, 2),
+        "correct_refusal_rate_pct": round(refusal_rate, 2),
+        "error_rate_pct": round(100 * errors / max(1, total), 2),
+        "per_category": per_category,
+    }
+
+
+def run() -> dict:
+    warmup()
+    store = load()
+
+    print("Retrieval metrics ...")
+    retrieval = retrieval_metrics(store) if store else {"available": False}
+    print("  ", retrieval)
+
+    print("Behavior metrics ...")
+    behavior = behavior_metrics()
+    print("  ", behavior)
+
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    out = {"retrieval": retrieval, "behavior": behavior, "dataset": "MSMARCO-XI"}
+    (REPORT_DIR / "quality.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
+    (REPORT_DIR / "quality.md").write_text(markdown(out), encoding="utf-8")
+    print("Reports written to", REPORT_DIR)
+    return out
+
+
+def markdown(out: dict) -> str:
+    r, b = out["retrieval"], out["behavior"]
+    lines = [
+        "# Quality report",
+        "",
+        f"Dataset: MSMARCO-XI",
+    ]
+    if r.get("available"):
+        lines += [
+            "",
+            "## Retrieval",
+            f"Test queries: {r['test_queries']}",
+            f"Recall@5: {r['recall_at_5_pct']}%",
+            f"Recall@10: {r['recall_at_10_pct']}%",
+            f"MRR: {r['mrr']}",
+        ]
+    lines += [
+        "",
+        "## Guardrails / behavior",
+        f"Test queries: {b['test_queries']}",
+        f"Overall accuracy: {b['overall_accuracy_pct']}%",
+        f"Grounded answers: {b['grounded_answer_rate_pct']}%",
+        f"Correct refusals: {b['correct_refusal_rate_pct']}%",
+        f"Error rate: {b['error_rate_pct']}%",
+        "",
+        "| Category | n | Accuracy |",
+        "|---|---|---|",
+    ]
+    for cat, stats in b["per_category"].items():
+        lines.append(f"| {cat} | {stats['n']} | {stats['accuracy_pct']}% |")
+    return "\n".join(lines)
+
+
 if __name__ == "__main__":
-    print(benchmark())
+    print(run())
