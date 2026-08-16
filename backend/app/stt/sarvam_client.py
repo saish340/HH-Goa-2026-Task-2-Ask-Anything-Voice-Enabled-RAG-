@@ -38,6 +38,16 @@ async def transcribe_audio(audio_bytes: bytes, language: str = "hi-IN") -> dict:
             "error": "Empty audio input",
         }
 
+    if not SARVAM_API_KEY:
+        logger.warning("SARVAM_API_KEY not set; skipping network call")
+        return {
+            "transcript": "",
+            "confidence": 0.0,
+            "language": language,
+            "duration_ms": 0,
+            "error": "STT not configured (set SARVAM_API_KEY)",
+        }
+
     # Encode audio as base64 for API transmission
     audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
 
