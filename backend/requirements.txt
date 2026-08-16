@@ -1,7 +1,23 @@
+# Core API
 fastapi==0.115.0
 uvicorn==0.30.6
 pydantic==2.9.2
-numpy==2.1.1
-httpx==0.27.2
-pytest==8.3.3
 python-multipart==0.0.9
+
+# HTTP / data
+httpx==0.27.2
+numpy==2.2.6
+datasets==5.0.1
+
+# Retrieval / ML stack
+torch==2.11.0
+sentence-transformers==5.7.0
+transformers==5.15.0
+faiss-cpu==1.15.0
+scikit-learn==1.7.2
+sentencepiece==0.2.2
+safetensors==0.8.0
+accelerate==1.14.0
+
+# Tests
+pytest==8.3.3

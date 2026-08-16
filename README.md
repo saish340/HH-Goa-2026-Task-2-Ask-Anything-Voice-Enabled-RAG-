@@ -98,6 +98,10 @@ Backend:
 
 ```bash
 cd backend
+pip install -r requirements.txt          # includes the ML/retrieval stack
+cp .env.example .env                     # optional; all settings have defaults
+# Build the offline index (data/passages.jsonl must exist under data/)
+python -m backend.app.ingestion.embed_and_index   # optional limit: ... 25000
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -108,6 +112,9 @@ cd frontend
 npm install
 npm run dev -- --host 0.0.0.0
 ```
+
+The default port the frontend calls is `8001`; set it in `frontend/src/App.jsx`
+or run uvicorn on `--port 8001`.
 
 Benchmarking:
 
