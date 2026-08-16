@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8001'
+
 const demoQuestions = [
   'What is the capital of France?',
   'Which city is the capital of India?',
@@ -49,7 +51,7 @@ function App() {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8001/api/benchmarks')
+        const res = await fetch(`${API_BASE}/api/benchmarks`)
         const data = await res.json()
         setMetrics(data)
       } catch (error) {
@@ -113,7 +115,7 @@ function App() {
       formData.append('file', audioBlob, 'audio.webm')
       formData.append('language', 'en-IN')
 
-      const res = await fetch('http://127.0.0.1:8001/api/transcribe', {
+      const res = await fetch(`${API_BASE}/api/transcribe`, {
         method: 'POST',
         body: formData,
       })
@@ -181,7 +183,7 @@ function App() {
       setTimeout(() => setStatusIndex(2), 600)
       setTimeout(() => setStatusIndex(3), 950)
 
-      const res = await fetch('http://127.0.0.1:8001/api/ask', {
+      const res = await fetch(`${API_BASE}/api/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),

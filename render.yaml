@@ -1,0 +1,26 @@
+# Render Blueprint — deploy the backend from infra/render.yaml
+#   render.yaml at repo root; the Dockerfile lives at backend/Dockerfile.
+# Create from dashboard: New > Blueprint > select this repo, or run:
+#   render blueprint launch
+services:
+  - type: web
+    name: hh-goa-ask-anything-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    healthCheckPath: /api/health
+    plan: starter # 512MB free tier is too tight for models+index; standard/starter recommended
+    numInstances: 1
+    envVars:
+      - key: AA_FORCE_CPU
+        value: "1"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: SARVAM_API_KEY
+        sync: false # set in the Render dashboard to enable STT
+      - key: AA_EMBEDDING_MODEL
+        value: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+    buildFilter:
+      paths:
+        - backend/**
+        - data/passages.jsonl
+        - data/eval_queries.jsonl

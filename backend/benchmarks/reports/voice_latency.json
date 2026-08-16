@@ -1,0 +1,8 @@
+{
+  "available": false,
+  "missing": [
+    "SARVAM_API_KEY",
+    "audio samples"
+  ],
+  "note": "Voice E2E latency not measured locally: set SARVAM_API_KEY and add audio samples to data/voice_samples/, then re-run."
+}

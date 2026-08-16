@@ -22,7 +22,7 @@ This project is a local working prototype for the HH Goa 2026 Task 2 challenge. 
 
 Fresh local validation performed:
 
-- Backend tests: `20 passed`
+- Backend tests: `21 passed`
 - Frontend build: `vite build` completed successfully
 
 ## Performance
@@ -84,6 +84,10 @@ P50: Not measured in this local environment
 P70: Not measured in this local environment
 P100: Not measured in this local environment
 
+Measured by `python -m benchmarks.run_voice_latency_bench` once `SARVAM_API_KEY` is set
+and audio samples exist under `data/voice_samples/` — it reports RAG-only, STT, and
+end-to-end P50/P70/P100 separately and writes an honest "not measured" report otherwise.
+
 ### Guardrails
 Grounded answers: 97.37%
 Correct refusals: 100.0%
@@ -133,9 +137,28 @@ Benchmarking:
 
 ```bash
 cd backend
-python -m benchmarks.run_latency_bench
-python -m benchmarks.run_quality_bench
+python -m benchmarks.run_latency_bench        # RAG-only P50/P70/P100 + stage table
+python -m benchmarks.run_quality_bench        # Recall@5/@10, MRR, behavior
+python -m benchmarks.run_voice_latency_bench  # voice → STT → RAG (needs key + samples)
 ```
+
+## Deployment
+
+`backend/Dockerfile` + `render.yaml` and `frontend/vercel.json` are ready to use.
+Follow `DEPLOYMENT.md` step by step; set `VITE_API_BASE` to the deployed backend URL.
+
+## Submission checklist
+
+From the HH Goa 2026 Task 2 master prompt — no resubmissions allowed, so verify each:
+
+- [x] GitHub repo with README + real measured numbers
+- [ ] Live deployed link (backend on Render, frontend on Vercel — see `DEPLOYMENT.md`)
+- [ ] Video 1: 90s team/process video (process, not product)
+- [ ] Video 2: end-to-end demo video (normal, paraphrase, off-topic refusal,
+      grounding/citations, multilingual if implemented)
+- [ ] Both videos posted on Instagram, X, and LinkedIn by every team member,
+      tagged **#RAGInGoa**, at least one Instagram account public
+- [ ] Submission form filled: https://forms.gle/MNvCjcv23Hn2Eeu58
 
 ## Notes
 
