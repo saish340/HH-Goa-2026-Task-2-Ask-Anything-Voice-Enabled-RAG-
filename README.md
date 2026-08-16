@@ -38,8 +38,8 @@ Recall@10: 88.00%
 MRR: 0.576
 
 ### Behavior / guardrails (131 queries across 7 categories)
-Overall accuracy: 94.66%
-Grounded answers: 93.42%
+Overall accuracy: 96.18%
+Grounded answers: 96.05%
 Correct refusals: 96.36%
 Error rate: 0.0%
 
@@ -48,7 +48,7 @@ Error rate: 0.0%
 | normal | 26 | 92.31% |
 | paraphrased | 20 | 95% |
 | noisy | 15 | 100% |
-| multilingual | 15 | 86.67% |
+| multilingual | 15 | 100% |
 | off_topic | 25 | 100% |
 | unanswerable | 15 | 86.67% |
 | adversarial | 15 | 100% |
@@ -76,7 +76,7 @@ P70: Not measured in this local environment
 P100: Not measured in this local environment
 
 ### Guardrails
-Grounded answers: 93.42%
+Grounded answers: 96.05%
 Correct refusals: 96.36%
 
 ## Example result

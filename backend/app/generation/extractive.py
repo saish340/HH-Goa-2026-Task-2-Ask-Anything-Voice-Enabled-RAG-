@@ -67,6 +67,10 @@ def extract_answer(query: str, contexts: Sequence[str], top_k: int = 6) -> Dict[
         n_words = len(sent.split())
         if n_words > 45:
             length_penalty = 0.75
+        elif n_words < 3:
+            # Terse fragments ("Boiling Temp.", "pillar, tower.") rarely answer
+            # a question; let a fuller sentence win instead.
+            length_penalty = 0.3
         score = semantic
         if query_terms:
             score = 0.75 * semantic + 0.25 * lexical
