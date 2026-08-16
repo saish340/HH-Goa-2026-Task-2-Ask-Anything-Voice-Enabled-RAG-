@@ -8,14 +8,14 @@
   },
   "behavior": {
     "test_queries": 131,
-    "overall_accuracy_pct": 96.18,
-    "grounded_answer_rate_pct": 96.05,
+    "overall_accuracy_pct": 96.95,
+    "grounded_answer_rate_pct": 97.37,
     "correct_refusal_rate_pct": 96.36,
     "error_rate_pct": 0.0,
     "per_category": {
       "normal": {
         "n": 26,
-        "accuracy_pct": 92.31
+        "accuracy_pct": 96.15
       },
       "paraphrased": {
         "n": 20,

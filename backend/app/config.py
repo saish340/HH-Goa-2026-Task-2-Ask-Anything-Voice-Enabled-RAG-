@@ -54,7 +54,9 @@ GROUNDING_MIN = float(os.environ.get("AA_GROUNDING_MIN", "0.30"))
 EXTRACT_MIN_SIM = float(os.environ.get("AA_EXTRACT_MIN_SIM", "0.50"))
 # Minimal fraction of query significant terms covered by the answer sentence
 # (skipped for non-Latin queries, where lexical coverage is meaningless).
-EXTRACT_MIN_COVERAGE = float(os.environ.get("AA_EXTRACT_MIN_COVERAGE", "0.25"))
+# Kept low because paraphrase answers rarely reuse query words verbatim; the
+# reranker relevance gate is the primary protection against irrelevant answers.
+EXTRACT_MIN_COVERAGE = float(os.environ.get("AA_EXTRACT_MIN_COVERAGE", "0.15"))
 # Answers shorter than this word count are treated as garbage / refused.
 EXTRACT_MIN_WORDS = int(os.environ.get("AA_EXTRACT_MIN_WORDS", "3"))
 # When the reranker runs, a top passage scoring below this cross-encoder value
