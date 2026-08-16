@@ -35,6 +35,7 @@ class QueryResponse(BaseModel):
     latency_ms: int = 0
     per_stage_ms: Dict[str, float] = {}
     strategy_used: str = "all"
+    generation_method: str = "extractive"  # extractive | llm
     degraded: bool = False
     status: str = "ok"  # ok | refused | error
     error: Optional[str] = None
