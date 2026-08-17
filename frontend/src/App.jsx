@@ -213,34 +213,30 @@ function App() {
 
   return (
     <div className="app-shell">
-      <svg className="deco-waves" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <linearGradient id="waveSunrise" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#FF6B4A" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="#FFB84D" stopOpacity="0.55" />
-          </linearGradient>
-          <linearGradient id="waveSunset" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#FF4D8D" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#6B4DFF" stopOpacity="0.4" />
-          </linearGradient>
-        </defs>
-        <path d="M0 96 C240 24 480 24 720 88 C960 152 1200 152 1440 88 L1440 320 L0 320 Z" fill="url(#waveSunset)" />
-        <path d="M0 152 C240 96 480 96 720 144 C960 192 1200 192 1440 144 L1440 320 L0 320 Z" fill="url(#waveSunrise)" />
+      <svg className="deco-palm" viewBox="0 0 220 210" aria-hidden="true" fill="var(--color-forest-dark)">
+        <path d="M156 100 C146 138 150 178 158 212 L150 212 C138 176 134 136 146 100 Z" />
+        <path d="M156 100 Q146 56 160 18 Q174 56 156 100 Z" />
+        <path d="M156 100 Q196 58 224 44 Q204 86 156 100 Z" />
+        <path d="M156 100 Q206 94 224 108 Q202 116 156 100 Z" />
+        <path d="M156 100 Q196 138 206 168 Q180 148 156 100 Z" />
+        <path d="M156 100 Q116 144 92 156 Q122 158 156 100 Z" />
+        <path d="M156 100 Q110 92 84 80 Q114 74 156 100 Z" />
+        <path d="M156 100 Q128 62 108 32 Q142 52 156 100 Z" />
       </svg>
 
-      <svg className="deco-palm" viewBox="0 0 120 120" aria-hidden="true">
-        <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.4">
-          <path d="M64 118 C58 88 60 56 64 34" />
-          <path d="M64 34 C36 38 20 26 10 8" />
-          <path d="M64 34 C38 22 36 4 54 2" />
-          <path d="M64 34 C70 16 88 6 108 8" />
-          <path d="M64 34 C86 26 104 30 118 44" />
-        </g>
+      <svg className="deco-palm-right" viewBox="0 0 220 210" aria-hidden="true" fill="var(--color-forest-dark)">
+        <path d="M156 100 C146 138 150 178 158 212 L150 212 C138 176 134 136 146 100 Z" />
+        <path d="M156 100 Q146 56 160 18 Q174 56 156 100 Z" />
+        <path d="M156 100 Q196 58 224 44 Q204 86 156 100 Z" />
+        <path d="M156 100 Q206 94 224 108 Q202 116 156 100 Z" />
+        <path d="M156 100 Q196 138 206 168 Q180 148 156 100 Z" />
+        <path d="M156 100 Q116 144 92 156 Q122 158 156 100 Z" />
+        <path d="M156 100 Q110 92 84 80 Q114 74 156 100 Z" />
+        <path d="M156 100 Q128 62 108 32 Q142 52 156 100 Z" />
       </svg>
 
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">#RAGInGoa</span>
           <span className="brand-text">Ask Anything</span>
         </div>
         <div className="signal-row">
@@ -252,7 +248,7 @@ function App() {
         <section className="hero-copy">
           <p className="eyebrow">Less Noise. More Signal.</p>
           <h1>
-            Speak a question, get a <span className="grad-text">grounded answer</span>.
+            Speak a question, get a <em>grounded answer</em>.
           </h1>
           <p className="subcopy">
             Voice-first retrieval over local knowledge with grounded answers, low-latency routing, and explicit refusal logic.
@@ -269,6 +265,7 @@ function App() {
 
         <section className="voice-panel">
           <div className={`mic-shell ${isListening ? 'listening' : ''}`}>
+            <div className="mic-ring" aria-hidden="true"></div>
             <button
               className="mic-button"
               type="button"
@@ -283,8 +280,8 @@ function App() {
                 <svg
                   className="mic-icon"
                   viewBox="0 0 24 24"
-                  width="36"
-                  height="36"
+                  width="38"
+                  height="38"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -298,6 +295,21 @@ function App() {
                 </svg>
               )}
             </button>
+            <span className="mic-badge" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
+                <rect x="2" y="7" width="3" height="5" rx="0.8" />
+                <rect x="6.5" y="3.5" width="3" height="8.5" rx="0.8" />
+                <rect x="11" y="5" width="3" height="7" rx="0.8" />
+              </svg>
+            </span>
+            <span className="mic-tag" aria-hidden="true">
+              <svg className="mic-tag-bars" viewBox="0 0 14 14" width="14" height="14" fill="currentColor">
+                <rect x="1" y="8" width="3" height="5" rx="1" />
+                <rect x="5.5" y="4" width="3" height="9" rx="1" />
+                <rect x="10" y="1.5" width="3" height="11.5" rx="1" />
+              </svg>
+              <span className="mic-tag-label">Ask Anything</span>
+            </span>
           </div>
 
           <div className="terminal-status" aria-live="polite">

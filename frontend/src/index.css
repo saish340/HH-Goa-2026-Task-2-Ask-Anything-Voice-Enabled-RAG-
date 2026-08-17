@@ -7,7 +7,7 @@
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
@@ -17,23 +17,13 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--bg-page);
+  color: var(--text-on-forest);
   font-family: var(--font-body);
   letter-spacing: 0.01em;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  pointer-events: none;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.6'/></svg>");
 }
 
 #root {
@@ -53,12 +43,12 @@ input {
 }
 
 ::selection {
-  background: rgba(255, 107, 74, 0.35);
-  color: var(--text-primary);
+  background: var(--color-mustard);
+  color: var(--color-forest-dark);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-warn);
+  outline: 3px solid var(--color-pink);
   outline-offset: 2px;
 }
 
