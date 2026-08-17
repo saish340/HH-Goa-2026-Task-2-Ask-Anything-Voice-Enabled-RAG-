@@ -1,0 +1,37 @@
+:root {
+  /* ==== backgrounds ==== */
+  --bg-primary: #0A0E14;
+  --bg-surface: #10151D;
+  --bg-surface-raised: #161C26;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  /* ==== gradients ==== */
+  --gradient-sunrise: linear-gradient(135deg, #FF6B4A, #FFB84D);
+  --gradient-sunset: linear-gradient(135deg, #FF4D8D, #6B4DFF);
+
+  /* ==== text ==== */
+  --text-primary: #F5F3EF;
+  --text-secondary: #A8AEB8;
+  --text-muted: #6B7280;
+
+  /* ==== status ==== */
+  --color-good: #4ADE80;
+  --color-warn: #FBBF24;
+  --color-bad: #F87171;
+
+  /* ==== typography ==== */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ==== radius ==== */
+  --radius-large: 10px;
+  --radius-medium: 6px;
+  --radius-small: 8px;
+
+  /* ==== motion ==== */
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+  --motion-slow: 300ms;
+}

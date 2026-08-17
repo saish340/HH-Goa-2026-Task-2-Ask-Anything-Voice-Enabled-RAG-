@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8001'
@@ -21,11 +21,7 @@ const defaultMetrics = {
   grounded_rate: 93.42,
 }
 
-const getStatusSequence = (state) => {
-  const states = ['🎙 listening...', '📝 transcribing...', '🔎 retrieving...', '🧠 generating...', '✅ done']
-  const index = Math.min(states.length - 1, Math.max(0, state))
-  return states.slice(0, index + 1).join(' → ')
-}
+const statusStages = ['listening...', 'transcribing...', 'retrieving...', 'generating...', 'done']
 
 function App() {
   const [query, setQuery] = useState('What is the capital of France?')
@@ -45,8 +41,6 @@ function App() {
   const mediaRecorderRef = useRef(null)
   const audioChunksRef = useRef([])
   const streamRef = useRef(null)
-
-  const liveStatus = useMemo(() => getStatusSequence(statusIndex), [statusIndex])
 
   useEffect(() => {
     const loadStats = async () => {
@@ -219,20 +213,47 @@ function App() {
 
   return (
     <div className="app-shell">
+      <svg className="deco-waves" viewBox="0 0 1440 320" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="waveSunrise" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#FF6B4A" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="#FFB84D" stopOpacity="0.55" />
+          </linearGradient>
+          <linearGradient id="waveSunset" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#FF4D8D" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#6B4DFF" stopOpacity="0.4" />
+          </linearGradient>
+        </defs>
+        <path d="M0 96 C240 24 480 24 720 88 C960 152 1200 152 1440 88 L1440 320 L0 320 Z" fill="url(#waveSunset)" />
+        <path d="M0 152 C240 96 480 96 720 144 C960 192 1200 192 1440 144 L1440 320 L0 320 Z" fill="url(#waveSunrise)" />
+      </svg>
+
+      <svg className="deco-palm" viewBox="0 0 120 120" aria-hidden="true">
+        <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.4">
+          <path d="M64 118 C58 88 60 56 64 34" />
+          <path d="M64 34 C36 38 20 26 10 8" />
+          <path d="M64 34 C38 22 36 4 54 2" />
+          <path d="M64 34 C70 16 88 6 108 8" />
+          <path d="M64 34 C86 26 104 30 118 44" />
+        </g>
+      </svg>
+
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark">#RAGInGoa</span>
-          <span className="brand-text">HH Goa 2026 · Task 2</span>
+          <span className="brand-text">Ask Anything</span>
         </div>
         <div className="signal-row">
-          <span>STT → Retrieve → Generate → Guardrail</span>
+          <span>GOA, INDIA · TASK 2</span>
         </div>
       </header>
 
       <main className="hero-panel">
         <section className="hero-copy">
           <p className="eyebrow">Less Noise. More Signal.</p>
-          <h1>Ask Anything.</h1>
+          <h1>
+            Speak a question, get a <span className="grad-text">grounded answer</span>.
+          </h1>
           <p className="subcopy">
             Voice-first retrieval over local knowledge with grounded answers, low-latency routing, and explicit refusal logic.
           </p>
@@ -252,17 +273,45 @@ function App() {
               className="mic-button"
               type="button"
               onClick={isListening ? stopRecording : startRecording}
-              aria-label="Ask a question with voice"
+              aria-label={isListening ? 'Stop recording' : 'Ask a question with voice'}
             >
-              🎙
+              {isListening ? (
+                <span className="waveform" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span><span></span>
+                </span>
+              ) : (
+                <svg
+                  className="mic-icon"
+                  viewBox="0 0 24 24"
+                  width="36"
+                  height="36"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="9" y="2" width="6" height="12" rx="3" />
+                  <path d="M5 10a7 7 0 0 0 14 0" />
+                  <path d="M12 19v3" />
+                </svg>
+              )}
             </button>
           </div>
 
-          <div className="waveform" aria-hidden="true">
-            <span></span><span></span><span></span><span></span><span></span><span></span>
+          <div className="terminal-status" aria-live="polite">
+            {statusStages.map((stage, index) => (
+              <span key={stage} className="seq-group">
+                {index > 0 && (
+                  <span className="seq-sep" aria-hidden="true">→</span>
+                )}
+                <span className={`stage ${index === statusIndex ? 'active' : index < statusIndex ? 'complete' : 'pending'}`}>
+                  {stage}
+                </span>
+              </span>
+            ))}
           </div>
-
-          <div className="terminal-status">{liveStatus}</div>
 
           {transcript && <div className="transcript-box">{transcript}</div>}
 
