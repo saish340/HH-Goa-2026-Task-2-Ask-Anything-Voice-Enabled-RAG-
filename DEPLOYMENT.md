@@ -28,10 +28,16 @@ Render rebuilds the image on every push that touches `backend/**` or
 ## 2. Frontend — Vercel
 
 1. Vercel dashboard → **Add New Project** → import the repo → **Frontend Directory:
-   `frontend`** (Framework Preset: Vite).
+   `frontend`** (Framework Preset: **Other** — the app is TanStack Start SSR
+   running on a Nitro server function, not a static Vite SPA).
 2. Environment variable: `VITE_API_BASE=https://<your-backend>.onrender.com`
-   (the URL from step 1.6, no trailing slash).
-3. Deploy. `vercel.json` already routes SPA requests and the build output dir is `dist`.
+   (the URL from step 1.6, no trailing slash). It is inlined at build time, so set
+   it before deploying; locally it defaults to `http://127.0.0.1:8001`.
+3. Deploy. `vercel.json` (`framework: null`, `buildCommand: npm run build`) makes
+   Vercel run the Nitro build, which emits `.vercel/output` (Build Output API v3) —
+   static assets plus the `__server` SSR function. `/api/...` calls are NOT proxied
+   here; the browser talks straight to the Render backend at `VITE_API_BASE`
+   (allowed by the backend's `allow_origins=["*"]`).
 
 ## 3. Verify live
 

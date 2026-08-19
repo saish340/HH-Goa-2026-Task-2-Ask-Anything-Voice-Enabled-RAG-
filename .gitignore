@@ -31,6 +31,11 @@ models/
 *.pkl
 *.joblib
 
+# Frontend / JS
+node_modules/
+dist/
+frontend-old/
+
 # OS
 .DS_Store
 Thumbs.db
