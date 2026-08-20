@@ -25,13 +25,14 @@ STOPWORDS = {
 
 
 def _significant(text: str) -> List[str]:
-    return [t for t in re.findall(r"[a-z0-9']+", text.lower()) if t not in STOPWORDS and len(t) > 1]
+    return [t for t in re.findall(r"[\w']+", text.lower()) if t not in STOPWORDS and len(t) > 1]
 
 
 def _extract_sentences(contexts: Sequence[str], max_chunks: int = 6) -> List[str]:
     sentences: List[str] = []
     for text in contexts[:max_chunks]:
-        for sent in re.split(r"(?<=[.!?])\s+", text):
+        # Split on Latin (.!?), Devanagari danda (।) and CJK full stop (。)
+        for sent in re.split(r"(?<=[.!?।。])\s*", text):
             sent = sent.strip()
             if len(sent) > 12:
                 sentences.append(sent)

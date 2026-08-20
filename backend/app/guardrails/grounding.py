@@ -20,7 +20,7 @@ STOPWORDS = {
 
 
 def _significant_tokens(text: str) -> set[str]:
-    tokens = re.findall(r"[a-z0-9']+", text.lower())
+    tokens = re.findall(r"[\w']+", text.lower())
     return {t for t in tokens if t not in STOPWORDS and len(t) > 1}
 
 

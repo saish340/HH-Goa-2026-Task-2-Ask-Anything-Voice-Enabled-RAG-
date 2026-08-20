@@ -11,7 +11,7 @@ import { ask, transcribe, type AskResponse } from "@/lib/api";
 
 const TITLE = "Ask Anything — Voice RAG Demo · HH Goa 2026";
 const DESC =
-  "Speak a question and get a grounded, cited answer: voice capture, transcription, hybrid retrieval and guarded generation in under 200ms.";
+  "Speak a question and get a grounded, cited answer. Voice capture and transcription run as separate in-browser and network steps; hybrid retrieval + guarded generation answer in under 200ms (RAG-only latency, verified by benchmark).";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,7 +27,17 @@ export const Route = createFileRoute("/")({
 
 const RECORD_MAX_MS = 8000;
 
+type LangOption = { code: string; label: string; stt: string; ask: string | null };
+const LANGUAGE_OPTIONS: LangOption[] = [
+  { code: "auto", label: "Auto", stt: "en-IN", ask: null },
+  { code: "en", label: "English", stt: "en-IN", ask: "en" },
+  { code: "hi", label: "हिन्दी", stt: "hi-IN", ask: "hi" },
+  { code: "mr", label: "मराठी", stt: "mr-IN", ask: "mr" },
+  { code: "ur", label: "اردو", stt: "ur-IN", ask: "ur" },
+];
+
 function Index() {
+  const [langCode, setLangCode] = useState<string>("auto");
   const [micState, setMicState] = useState<MicState>("idle");
   const [stage, setStage] = useState<Stage>("idle");
   const [transcript, setTranscript] = useState<string | null>(null);
@@ -36,6 +46,8 @@ function Index() {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const processingRef = useRef(false);
+  const lang = LANGUAGE_OPTIONS.find((o) => o.code === langCode) ?? LANGUAGE_OPTIONS[0];
+  const transcribeLabel = lang.code === "auto" ? "speech to text, auto-detected" : `speech to text, ${lang.stt}`;
 
   useEffect(() => {
     return () => {
@@ -102,12 +114,12 @@ function Index() {
     setMicState("processing");
     setStage("transcribing...");
     try {
-      const stt = await transcribe(blob);
+      const stt = await transcribe(blob, lang.stt);
       if (stt.error) throw new Error(stt.error);
       setTranscript(stt.transcript);
 
       setStage("retrieving...");
-      const answer = await ask(stt.transcript, "fast", stt.language);
+      const answer = await ask(stt.transcript, "fast", lang.ask);
 
       setStage("done");
       setMicState("done");
@@ -156,6 +168,21 @@ function Index() {
             cited, scored for confidence, and refused when the evidence doesn't hold up.
           </p>
 
+          <label className="mt-7 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-[var(--color-mustard)]">
+            Language
+            <select
+              value={langCode}
+              onChange={(e) => setLangCode(e.target.value)}
+              className="cursor-pointer rounded-md border-2 border-[var(--color-mustard)] bg-[var(--color-forest-dark)] px-3 py-1.5 font-mono text-[12px] normal-case tracking-normal text-white outline-none hover:border-[var(--color-pink)] focus:border-[var(--color-pink)]"
+            >
+              {LANGUAGE_OPTIONS.map((o) => (
+                <option key={o.code} value={o.code}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <div className="mt-14 mb-10">
             <MicButton state={micState} onClick={run} />
           </div>
@@ -184,7 +211,7 @@ function Index() {
       </div>
 
       <div className="mx-auto max-w-3xl px-5 pb-20">
-        <HangingCards />
+        <HangingCards transcribeLabel={transcribeLabel} />
 
         {response && (
           <div className="mt-14">

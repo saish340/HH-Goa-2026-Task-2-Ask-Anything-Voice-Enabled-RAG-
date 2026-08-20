@@ -1,13 +1,12 @@
-const STAGES = [
-  { label: "STAGE 01 — LISTEN", sub: "voice captured, live waveform" },
-  { label: "STAGE 02 — TRANSCRIBE", sub: "speech to text, en-IN" },
-  { label: "STAGE 03 — RETRIEVE", sub: "hybrid search, re-ranked" },
-  { label: "STAGE 04 — GENERATE", sub: "grounded, guarded, cited" },
-];
-
 const ROTATIONS = ["-2deg", "2deg", "-1.5deg", "1.5deg"];
 
-export function HangingCards() {
+export function HangingCards({ transcribeLabel = "speech to text, en-IN" }: { transcribeLabel?: string }) {
+  const STAGES = [
+    { label: "STAGE 01 — LISTEN", sub: "voice captured, live waveform" },
+    { label: "STAGE 02 — TRANSCRIBE", sub: transcribeLabel },
+    { label: "STAGE 03 — RETRIEVE", sub: "hybrid search, re-ranked" },
+    { label: "STAGE 04 — GENERATE", sub: "grounded, guarded, cited" },
+  ];
   return (
     <section aria-label="How it works" className="w-full">
       {/* bamboo pole */}

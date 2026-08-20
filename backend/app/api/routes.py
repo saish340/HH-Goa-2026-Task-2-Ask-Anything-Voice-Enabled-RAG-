@@ -8,7 +8,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from backend.app.config import BENCH_DIR, DATA_DIR
-from backend.app.harness.orchestrator import run_query, warmup
+from backend.app.harness.orchestrator import run_query
 from backend.app.harness.schemas import QueryRequest, QueryResponse
 from backend.app.stt.sarvam_client import transcribe_audio
 
@@ -27,11 +27,6 @@ class TranscribeResponse(BaseModel):
     language: str
     duration_ms: int
     error: str | None = None
-
-
-@app.on_event("startup")
-def _startup_warmup() -> None:
-    warmup()
 
 
 @app.get("/health")

@@ -14,7 +14,8 @@ from typing import Dict, List, Sequence, Tuple
 
 
 def tokenize(text: str) -> List[str]:
-    return re.findall(r"[a-z0-9']+", text.lower())
+    """Unicode-aware tokenizer: \w covers Devanagari/Arabic/Latin scripts."""
+    return re.findall(r"[\w']+", text.lower())
 
 
 STOPWORDS = {
